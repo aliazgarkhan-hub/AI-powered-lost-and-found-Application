@@ -1,0 +1,16 @@
+fastapi==0.115.0
+uvicorn[standard]==0.30.6
+sqlalchemy==2.0.35
+pydantic==2.9.2
+pydantic-settings==2.5.2
+email-validator>=2.0  # required by pydantic's EmailStr (used in schemas.py) -- app.main fails to import without it
+python-multipart==0.0.9
+passlib[bcrypt]==1.7.4
+bcrypt==3.2.2  # pin: bcrypt>=4.0 breaks passlib 1.7.4's backend self-test (ValueError on every hash/verify call)
+python-jose[cryptography]==3.3.0
+python-dotenv==1.0.1
+Pillow==10.4.0
+scikit-learn==1.5.2
+numpy==1.26.4
+# Optional, heavier, better semantic matching. Falls back gracefully if not installed.
+sentence-transformers==3.1.1

@@ -1,0 +1,981 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>FindBack AI</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,500;0,600;0,700;1,500&family=Source+Serif+4:ital,wght@0,400;0,500;0,600;1,400&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --ivory: #F5EFE3;
+    --paper: #FCFAF3;
+    --paper-2: #F8F3E8;
+    --ink: #26201C;
+    --ink-soft: #5B4F46;
+    --ink-faint: #8A7C6E;
+    --oxblood: #7C1F2C;
+    --oxblood-deep: #591319;
+    --oxblood-tint: #F3E4E3;
+    --brass: #A6824A;
+    --rule: rgba(38,32,28,0.15);
+    --check: #FCFAF3;
+    --good: #4B6B3F;
+    box-sizing: border-box;
+    padding-top: env(safe-area-inset-top, 0px);
+    padding-bottom: env(safe-area-inset-bottom, 0px);
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --ivory: #1C1613; --paper: #241D19; --paper-2: #2B231E;
+      --ink: #EFE6DA; --ink-soft: #B9A996; --ink-faint: #8B7C6C;
+      --oxblood: #D06E79; --oxblood-deep: #E4838D; --oxblood-tint: #3A2224;
+      --brass: #C7A468; --rule: rgba(239,230,218,0.16); --check: #241D19;
+      --good: #8FB27F;
+    }
+  }
+  :root[data-theme="dark"] {
+    --ivory: #1C1613; --paper: #241D19; --paper-2: #2B231E;
+    --ink: #EFE6DA; --ink-soft: #B9A996; --ink-faint: #8B7C6C;
+    --oxblood: #D06E79; --oxblood-deep: #E4838D; --oxblood-tint: #3A2224;
+    --brass: #C7A468; --rule: rgba(239,230,218,0.16); --check: #241D19;
+    --good: #8FB27F;
+  }
+  html { scroll-padding-top: env(safe-area-inset-top, 0px); height: 100%; }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; min-height: 100%;
+    background: var(--ivory); color: var(--ink);
+    font-family: "Source Serif 4", Georgia, "Times New Roman", serif;
+    -webkit-font-smoothing: antialiased;
+  }
+  h1, h2, h3, .display { font-family: "Cormorant Garamond", Georgia, serif; font-weight: 600; }
+  a { color: inherit; }
+
+  /* ---------- Nav ---------- */
+  nav.topbar {
+    position: sticky; top: 0; z-index: 20;
+    padding-top: calc(14px + env(safe-area-inset-top, 0px));
+    background: var(--ivory);
+    border-bottom: 1px solid var(--oxblood);
+    display: flex; align-items: center; justify-content: space-between;
+    padding-left: 20px; padding-right: 20px; padding-bottom: 12px;
+    gap: 12px; flex-wrap: wrap;
+  }
+  .brand { display: flex; align-items: center; gap: 10px; }
+  .brand .seal {
+    width: 26px; height: 26px; border-radius: 50%; background: var(--oxblood);
+    display: flex; align-items: center; justify-content: center; flex: 0 0 auto;
+  }
+  .brand .seal svg { width: 13px; height: 13px; fill: var(--paper); }
+  .brand span { font-family: "Cormorant Garamond", Georgia, serif; font-weight: 700; font-size: 19px; letter-spacing: 0.2px; }
+  .tabs { display: flex; gap: 4px; flex-wrap: wrap; }
+  .tab-btn {
+    font-family: inherit; font-size: 14px; color: var(--ink-soft);
+    background: none; border: none; padding: 7px 12px; cursor: pointer;
+    border-bottom: 2px solid transparent; letter-spacing: 0.2px;
+  }
+  .tab-btn.active { color: var(--oxblood); border-bottom-color: var(--oxblood); }
+  .tab-btn:hover { color: var(--oxblood); }
+
+  main { max-width: 760px; margin: 0 auto; padding: 40px 20px 100px; }
+  .view { display: none; }
+  .view.active { display: block; animation: fadein 0.2s ease; }
+  @keyframes fadein { from { opacity: 0; transform: translateY(4px);} to {opacity:1; transform:none;} }
+
+  /* ---------- Home ---------- */
+  header.masthead { text-align: center; margin-bottom: 40px; }
+  header.masthead h1 { font-size: clamp(32px,6vw,46px); margin: 14px 0 8px; line-height: 1.05; }
+  header.masthead .sub { font-style: italic; color: var(--ink-soft); font-size: 16.5px; margin: 0 0 26px; }
+  .flow-line {
+    font-size: 14.5px; line-height: 2; color: var(--ink);
+    border-top: 1px solid var(--rule); border-bottom: 1px solid var(--rule);
+    padding: 15px 6px; display: inline-block;
+  }
+  .flow-line .arrow { color: var(--brass); padding: 0 8px; }
+  .flow-line .pct { color: var(--oxblood); font-weight: 600; }
+
+  .cta-row { display: flex; gap: 14px; justify-content: center; margin-top: 30px; flex-wrap: wrap; }
+  .btn {
+    font-family: "Source Serif 4", Georgia, serif; font-size: 15px; cursor: pointer;
+    padding: 12px 22px; border: 1px solid var(--oxblood); background: none; color: var(--oxblood);
+    letter-spacing: 0.2px; transition: background 0.15s ease, color 0.15s ease;
+  }
+  .btn:hover { background: var(--oxblood); color: var(--paper); }
+  .btn.solid { background: var(--oxblood); color: var(--paper); }
+  .btn.solid:hover { background: var(--oxblood-deep); border-color: var(--oxblood-deep); }
+  .btn.ghost { border-color: var(--rule); color: var(--ink-soft); }
+  .btn.ghost:hover { background: var(--paper-2); color: var(--ink); }
+  .btn:disabled { opacity: 0.45; cursor: default; }
+  .btn:disabled:hover { background: none; color: var(--oxblood); }
+  .btn.small { padding: 7px 14px; font-size: 13.5px; }
+
+  .stat-strip {
+    display: flex; justify-content: center; gap: 34px; margin-top: 42px;
+    padding-top: 26px; border-top: 1px solid var(--rule); flex-wrap: wrap;
+  }
+  .stat { text-align: center; }
+  .stat b { display: block; font-family: "Cormorant Garamond", Georgia, serif; font-size: 30px; color: var(--oxblood); }
+  .stat span { font-size: 12.5px; color: var(--ink-faint); font-style: italic; }
+
+  .home-actions { text-align: center; margin-top: 30px; }
+  .link-btn { background: none; border: none; font-family: inherit; color: var(--ink-faint); font-style: italic; font-size: 13.5px; cursor: pointer; text-decoration: underline; text-underline-offset: 3px; }
+  .link-btn:hover { color: var(--oxblood); }
+
+  /* ---------- Report form ---------- */
+  .kind-toggle { display: flex; gap: 0; margin-bottom: 28px; border: 1px solid var(--oxblood); width: fit-content; }
+  .kind-toggle button {
+    font-family: "Source Serif 4", Georgia, serif; font-size: 14.5px; padding: 9px 20px;
+    background: none; border: none; cursor: pointer; color: var(--oxblood);
+  }
+  .kind-toggle button.active { background: var(--oxblood); color: var(--paper); }
+  .kind-toggle button + button { border-left: 1px solid var(--oxblood); }
+
+  form.report-form h2 { font-size: 24px; margin: 0 0 4px; }
+  form.report-form .hint { color: var(--ink-soft); font-style: italic; font-size: 14px; margin: 0 0 26px; }
+  #account-summary { color: var(--ink-soft); font-style: italic; font-size: 14px; margin: 0 0 18px; }
+  .field { margin-bottom: 18px; }
+  .field label { display: block; font-size: 13px; color: var(--ink-soft); margin-bottom: 6px; letter-spacing: 0.15px; }
+  .field input, .field textarea, .field select {
+    width: 100%; font-family: "Source Serif 4", Georgia, serif; font-size: 15.5px;
+    padding: 10px 2px; background: none; border: none; border-bottom: 1px solid var(--rule);
+    color: var(--ink); outline: none;
+  }
+  .field input:focus, .field textarea:focus, .field select:focus { border-bottom-color: var(--oxblood); }
+  .field textarea { resize: vertical; min-height: 68px; line-height: 1.5; }
+  .field-row { display: flex; gap: 18px; }
+  .field-row .field { flex: 1; }
+  form.report-form .submit-row { margin-top: 30px; display: flex; align-items: center; gap: 14px; }
+  .form-msg { font-size: 13.5px; font-style: italic; color: var(--ink-soft); }
+  .form-msg.err { color: var(--oxblood); }
+
+  /* ---------- Cards / lists ---------- */
+  .section-head {
+    display: flex; align-items: baseline; justify-content: space-between;
+    border-bottom: 1px solid var(--oxblood); padding-bottom: 10px; margin-bottom: 18px; gap: 10px; flex-wrap: wrap;
+  }
+  .section-head h2 { font-size: 24px; margin: 0; }
+  .section-head .meta { font-style: italic; font-size: 13.5px; color: var(--ink-faint); }
+
+  .empty-note {
+    padding: 30px 10px; text-align: center; color: var(--ink-faint); font-style: italic; font-size: 14.5px;
+    border: 1px dashed var(--rule);
+  }
+
+  .match-card, .item-card {
+    border: 1px solid var(--rule); background: var(--paper); padding: 18px 20px;
+    margin-bottom: 14px; cursor: pointer;
+  }
+  .match-card:hover, .item-card:hover { border-color: var(--brass); }
+
+  .match-top { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 10px; flex-wrap: wrap; }
+  .score-badge {
+    font-family: "Cormorant Garamond", Georgia, serif; font-weight: 700; font-size: 17px;
+    color: var(--oxblood); border: 1px solid var(--oxblood); padding: 3px 12px; white-space: nowrap;
+  }
+  .score-badge.low { color: var(--ink-faint); border-color: var(--rule); }
+  .match-date { font-size: 12.5px; color: var(--ink-faint); font-style: italic; }
+  .match-pair { display: flex; align-items: center; gap: 10px; font-size: 15.5px; flex-wrap: wrap; }
+  .match-pair .tag { font-size: 11px; text-transform: none; color: var(--ink-faint); font-style: italic; }
+  .match-pair .arrow { color: var(--brass); }
+  .match-explain { margin-top: 10px; font-size: 14px; color: var(--ink-soft); line-height: 1.55; border-top: 1px solid var(--rule); padding-top: 10px; }
+
+  .item-top { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
+  .item-kind {
+    font-size: 11.5px; padding: 2px 9px; border: 1px solid; white-space: nowrap;
+  }
+  .item-kind.lost { color: var(--oxblood); border-color: var(--oxblood); }
+  .item-kind.found { color: var(--good); border-color: var(--good); }
+  .item-title { font-size: 16.5px; margin: 8px 0 4px; }
+  .item-sub { font-size: 13px; color: var(--ink-faint); font-style: italic; }
+
+  .filter-row { display: flex; gap: 8px; margin-bottom: 18px; }
+  .filter-row button {
+    font-family: inherit; font-size: 13px; padding: 6px 13px; background: none;
+    border: 1px solid var(--rule); color: var(--ink-soft); cursor: pointer;
+  }
+  .filter-row button.active { border-color: var(--oxblood); color: var(--oxblood); }
+
+  /* ---------- Modal ---------- */
+  .modal-backdrop {
+    position: fixed; inset: 0; background: rgba(20,14,12,0.45); z-index: 50;
+    display: flex; align-items: flex-end; justify-content: center;
+  }
+  @media (min-width: 620px) { .modal-backdrop { align-items: center; } }
+  .modal {
+    background: var(--paper); max-width: 560px; width: 100%; max-height: 85vh; overflow-y: auto;
+    padding: 28px 26px calc(26px + env(safe-area-inset-bottom, 0px));
+    border-top: 3px solid var(--oxblood);
+  }
+  @media (min-width: 620px) { .modal { border-top-width: 3px; margin: 20px; } }
+  .modal h3 { font-size: 23px; margin: 0 0 4px; }
+  .modal .modal-close { float: right; background: none; border: none; font-size: 22px; color: var(--ink-faint); cursor: pointer; line-height: 1; }
+  .detail-row { display: flex; gap: 10px; padding: 9px 0; border-bottom: 1px solid var(--rule); font-size: 14.5px; }
+  .detail-row .k { flex: 0 0 100px; color: var(--ink-faint); font-style: italic; font-size: 13px; }
+  .detail-row .v { flex: 1; }
+  .modal .divider { text-align: center; color: var(--brass); margin: 18px 0 10px; font-style: italic; font-size: 13px; }
+
+  /* ---------- Toast ---------- */
+  .toast {
+    position: fixed; left: 50%; bottom: calc(22px + env(safe-area-inset-bottom, 0px));
+    transform: translate(-50%, 12px); background: var(--ink); color: var(--paper);
+    padding: 11px 20px; font-size: 14px; z-index: 60; opacity: 0; pointer-events: none;
+    transition: opacity 0.2s ease, transform 0.2s ease; max-width: 88vw; text-align: center;
+  }
+  .toast.show { opacity: 1; transform: translate(-50%, 0); }
+
+  footer.foot { text-align: center; font-style: italic; font-size: 13px; color: var(--ink-faint); margin-top: 56px; padding-top: 18px; border-top: 1px solid var(--rule); }
+
+  @media (max-width: 480px) {
+    main { padding: 28px 16px 90px; }
+    .field-row { flex-direction: column; gap: 0; }
+    .tabs { width: 100%; justify-content: flex-start; overflow-x: auto; }
+  }
+</style>
+</head>
+<body>
+
+<nav class="topbar">
+  <div class="brand">
+    <span class="seal" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M12 2 3 6v6c0 5.2 3.6 9.5 9 11 5.4-1.5 9-5.8 9-11V6l-9-4z"/></svg></span>
+    <span>FindBack AI</span>
+  </div>
+  <div class="tabs">
+    <button class="tab-btn" data-view="home">Home</button>
+    <button class="tab-btn" data-view="report">Report</button>
+    <button class="tab-btn" data-view="dashboard">Match Dashboard</button>
+    <button class="tab-btn" data-view="reports">All Reports</button>
+    <button class="tab-btn" data-view="account">Account</button>
+  </div>
+</nav>
+
+<main>
+
+  <div id="backend-banner" class="empty-note" style="display:none; margin-bottom:24px;"></div>
+
+  <!-- HOME -->
+  <section id="view-home" class="view">
+    <header class="masthead">
+      <h1>Lost &amp; Found</h1>
+      <p class="sub">Report it, and let matching find the rest</p>
+      <p class="flow-line">
+        Report Lost <span class="arrow">→</span> Report Found <span class="arrow">→</span> AI compares <span class="arrow">→</span> <span class="pct">Possible Match found</span> <span class="arrow">→</span> Contact
+      </p>
+    </header>
+    <div class="cta-row">
+      <button class="btn solid" data-go-report="lost">Report a lost item</button>
+      <button class="btn" data-go-report="found">Report a found item</button>
+    </div>
+    <div class="stat-strip">
+      <div class="stat"><b id="stat-lost">0</b><span>Lost reports</span></div>
+      <div class="stat"><b id="stat-found">0</b><span>Found reports</span></div>
+      <div class="stat"><b id="stat-matches">0</b><span>Possible matches</span></div>
+    </div>
+    <div class="home-actions">
+      <button class="link-btn" id="seed-btn">Load demo data</button>
+    </div>
+  </section>
+
+  <!-- REPORT -->
+  <section id="view-report" class="view">
+    <div class="kind-toggle">
+      <button id="kind-lost-btn" class="active" data-kind="lost">Report Lost</button>
+      <button id="kind-found-btn" data-kind="found">Report Found</button>
+    </div>
+    <form class="report-form" id="report-form">
+      <h2 id="report-title">Report a lost item</h2>
+      <p class="hint" id="report-hint">Describe it well — matching works from these details.</p>
+
+      <div class="field">
+        <label for="f-title">Item title</label>
+        <input id="f-title" required placeholder="e.g. Black backpack">
+      </div>
+      <div class="field-row">
+        <div class="field">
+          <label for="f-category">Category</label>
+          <select id="f-category">
+            <option>Bag</option><option>Electronics</option><option>ID Card</option>
+            <option>Bottle</option><option>Umbrella</option><option>Keys</option>
+            <option>Jewelry</option><option>Clothing</option><option>Wallet</option><option>Other</option>
+          </select>
+        </div>
+        <div class="field">
+          <label for="f-date">Date</label>
+          <input id="f-date" type="date">
+        </div>
+      </div>
+      <div class="field">
+        <label for="f-location" id="f-location-label">Where was it lost?</label>
+        <input id="f-location" placeholder="e.g. Library, 2nd floor">
+      </div>
+      <div class="field">
+        <label for="f-description">Description</label>
+        <textarea id="f-description" required placeholder="Color, brand, marks, contents — anything distinctive."></textarea>
+      </div>
+      <div class="field">
+        <label for="f-contact">Contact (email or phone)</label>
+        <input id="f-contact" required placeholder="you@example.com">
+      </div>
+
+      <div class="submit-row">
+        <button type="submit" class="btn solid" id="submit-btn">Submit report</button>
+        <span class="form-msg" id="form-msg"></span>
+      </div>
+    </form>
+  </section>
+
+  <!-- DASHBOARD -->
+  <section id="view-dashboard" class="view">
+    <div class="section-head">
+      <h2>Match Dashboard</h2>
+      <span class="meta" id="dash-meta">0 possible matches</span>
+    </div>
+    <div id="dash-list"></div>
+  </section>
+
+  <!-- ALL REPORTS -->
+  <section id="view-reports" class="view">
+    <div class="section-head">
+      <h2>All Reports</h2>
+      <span class="meta" id="reports-meta">0 total</span>
+    </div>
+    <div class="filter-row">
+      <button class="active" data-filter="all">All</button>
+      <button data-filter="lost">Lost</button>
+      <button data-filter="found">Found</button>
+    </div>
+    <div id="reports-list"></div>
+  </section>
+
+  <!-- ACCOUNT -->
+  <section id="view-account" class="view">
+    <div class="section-head">
+      <h2>Account</h2>
+    </div>
+
+    <div id="account-guest">
+      <div class="kind-toggle">
+        <button id="auth-login-btn" class="active" data-auth="login">Sign in</button>
+        <button id="auth-register-btn" data-auth="register">Register</button>
+      </div>
+
+      <form class="report-form" id="login-form">
+        <h2>Sign in</h2>
+        <p class="hint">Sign in to submit reports and run AI matching.</p>
+        <div class="field">
+          <label for="li-email">Email</label>
+          <input id="li-email" type="email" required placeholder="you@example.com">
+        </div>
+        <div class="field">
+          <label for="li-password">Password</label>
+          <input id="li-password" type="password" required placeholder="••••••••">
+        </div>
+        <div class="submit-row">
+          <button type="submit" class="btn solid">Sign in</button>
+          <span class="form-msg" id="login-msg"></span>
+        </div>
+      </form>
+
+      <form class="report-form" id="register-form" style="display:none;">
+        <h2>Create an account</h2>
+        <p class="hint">Only needed once — you'll stay signed in on this device.</p>
+        <div class="field">
+          <label for="reg-name">Name</label>
+          <input id="reg-name" required placeholder="Your name">
+        </div>
+        <div class="field">
+          <label for="reg-email">Email</label>
+          <input id="reg-email" type="email" required placeholder="you@example.com">
+        </div>
+        <div class="field">
+          <label for="reg-password">Password</label>
+          <input id="reg-password" type="password" required minlength="8" placeholder="At least 8 characters">
+        </div>
+        <div class="submit-row">
+          <button type="submit" class="btn solid">Create account</button>
+          <span class="form-msg" id="register-msg"></span>
+        </div>
+      </form>
+    </div>
+
+    <div id="account-user" style="display:none;">
+      <p id="account-summary"></p>
+      <button class="btn" id="logout-btn">Log out</button>
+    </div>
+  </section>
+
+  <footer class="foot">Reports are saved by the FindBack AI backend, and matches are scored live by its AI matching engine.</footer>
+</main>
+
+<div id="toast" class="toast"></div>
+
+<script>
+(function () {
+  "use strict";
+
+  /* ================= Config & session ================= */
+  var API_BASE = "http://127.0.0.1:8000";
+  var TOKEN_KEY = "lf-auth-token-v1";
+  var USER_KEY = "lf-auth-user-v1";
+  var SEED_KEY = "lf-app-seeded-v1";
+
+  /* ================= State ================= */
+  var items = {};    // id -> report (from GET /api/lost + /api/found)
+  var matches = {};  // id -> match (from GET/POST /api/match*)
+  var currentKind = "lost";
+  var currentFilter = "all";
+  var pendingReportKind = null; // where to send the user after they sign in
+
+  /* ================= Utilities ================= */
+  function esc(s) {
+    return String(s == null ? "" : s).replace(/[&<>"']/g, function (c) {
+      return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c];
+    });
+  }
+  function toast(msg) {
+    var t = document.getElementById("toast");
+    t.textContent = msg;
+    t.classList.add("show");
+    clearTimeout(toast._t);
+    toast._t = setTimeout(function () { t.classList.remove("show"); }, 2600);
+  }
+  function formatDate(iso) {
+    if (!iso) return "";
+    var d = new Date(iso);
+    if (isNaN(d.getTime())) return "";
+    return d.toLocaleDateString();
+  }
+  function statusLabel(s) {
+    var map = {
+      active: "Active",
+      possible_match: "Possible match found",
+      match_confirmed: "Match confirmed",
+      returned: "Returned to owner",
+      closed: "Closed"
+    };
+    return map[s] || s || "—";
+  }
+
+  /* ================= Session helpers ================= */
+  function getToken() { return localStorage.getItem(TOKEN_KEY); }
+  function isLoggedIn() { return !!getToken(); }
+  function getStoredUser() {
+    try { return JSON.parse(localStorage.getItem(USER_KEY) || "null"); } catch (e) { return null; }
+  }
+  function setSession(token, user) {
+    localStorage.setItem(TOKEN_KEY, token);
+    localStorage.setItem(USER_KEY, JSON.stringify(user));
+  }
+  function clearSession() {
+    localStorage.removeItem(TOKEN_KEY);
+    localStorage.removeItem(USER_KEY);
+  }
+
+  /* ================= API layer =================
+     Every request goes through apiRequest(), which is the ONLY place that
+     talks to the backend. It attaches the JWT, tells apart JSON vs.
+     multipart bodies, and turns backend/network failures into one
+     friendly message the UI can show. Nothing here fabricates data or
+     falls back to a local/fake result if the real call fails. */
+  function apiError(message, status, data) {
+    var err = new Error(message);
+    err.status = status;
+    err.data = data;
+    return err;
+  }
+  function setBackendBanner(show, message) {
+    var el = document.getElementById("backend-banner");
+    if (!el) return;
+    if (show) { el.textContent = message; el.style.display = "block"; }
+    else { el.style.display = "none"; }
+  }
+  function friendlyErrorFromResponse(status, data) {
+    if (status === 0) {
+      return "Can't reach the backend at " + API_BASE + ". Make sure it's running (and check CORS_ORIGINS if it is).";
+    }
+    if (data && typeof data.error === "string") {
+      if (data.error === "Validation failed" && Array.isArray(data.details) && data.details.length) {
+        var first = data.details[0];
+        var loc = Array.isArray(first.loc) ? first.loc : [];
+        var field = loc.length ? loc[loc.length - 1] : "";
+        return (field ? field + ": " : "") + (first.msg || "Please check the form and try again.");
+      }
+      return data.error;
+    }
+    return "Something went wrong (HTTP " + status + ").";
+  }
+  async function apiRequest(path, options) {
+    options = options || {};
+    var isForm = options.body instanceof FormData;
+    var headers = {};
+    if (options.body != null && !isForm) headers["Content-Type"] = "application/json";
+    var token = getToken();
+    if (token) headers.Authorization = "Bearer " + token;
+
+    var res;
+    try {
+      res = await fetch(API_BASE + path, {
+        method: options.method || "GET",
+        headers: headers,
+        body: options.body
+      });
+    } catch (networkErr) {
+      var msg = friendlyErrorFromResponse(0, null);
+      setBackendBanner(true, msg);
+      throw apiError(msg, 0, null);
+    }
+    setBackendBanner(false); // fetch completed, so the backend IS reachable
+
+    var data = null;
+    try { data = await res.json(); } catch (e) { data = null; }
+
+    if (!res.ok) {
+      if (res.status === 401 && token) clearSession();
+      throw apiError(friendlyErrorFromResponse(res.status, data), res.status, data);
+    }
+    return data;
+  }
+
+  function apiRegister(name, email, password) {
+    return apiRequest("/api/auth/register", {
+      method: "POST",
+      body: JSON.stringify({ name: name, email: email, password: password })
+    });
+  }
+  function apiLogin(email, password) {
+    return apiRequest("/api/auth/login", {
+      method: "POST",
+      body: JSON.stringify({ email: email, password: password })
+    });
+  }
+  function apiMe() { return apiRequest("/api/auth/me", { method: "GET" }); }
+  function apiCreateReport(kind, formData) {
+    return apiRequest("/api/" + kind, { method: "POST", body: formData });
+  }
+  function apiListReports(kind) { return apiRequest("/api/" + kind, { method: "GET" }); }
+  function apiRunMatch(reportId) {
+    return apiRequest("/api/match", {
+      method: "POST",
+      body: JSON.stringify({ report_id: reportId })
+    });
+  }
+  function apiListMatches() { return apiRequest("/api/matches", { method: "GET" }); }
+  function apiSeedDemo() { return apiRequest("/api/demo/seed", { method: "POST" }); }
+
+  /* ================= Data refresh =================
+     items/matches always mirror whatever the backend last returned --
+     there is no local/offline copy that outlives a page reload. */
+  async function refreshReports() {
+    var lostList = await apiListReports("lost");
+    var foundList = await apiListReports("found");
+    var next = {};
+    lostList.concat(foundList).forEach(function (r) { next[r.id] = r; });
+    items = next;
+  }
+  async function refreshMatches() {
+    var list = await apiListMatches();
+    var next = {};
+    list.forEach(function (m) { next[m.id] = m; });
+    matches = next;
+  }
+  async function refreshAll() {
+    var results = await Promise.allSettled([refreshReports(), refreshMatches()]);
+    renderAll();
+    var failure = results.filter(function (r) { return r.status === "rejected"; })[0];
+    if (failure) throw failure.reason;
+  }
+
+  /* ================= View switching ================= */
+  function setView(name) {
+    document.querySelectorAll(".view").forEach(function (v) { v.classList.remove("active"); });
+    document.querySelectorAll(".tab-btn").forEach(function (b) { b.classList.toggle("active", b.dataset.view === name); });
+    var el = document.getElementById("view-" + name);
+    if (el) el.classList.add("active");
+    window.scrollTo(0, 0);
+  }
+  document.querySelectorAll(".tab-btn").forEach(function (b) {
+    b.addEventListener("click", function () {
+      var view = b.dataset.view;
+      if (view === "report" && !isLoggedIn()) {
+        pendingReportKind = currentKind;
+        setView("account");
+        toast("Please sign in to submit a report.");
+        return;
+      }
+      setView(view);
+      if (view === "dashboard") refreshMatches().then(renderAll).catch(function () {});
+      if (view === "reports") refreshReports().then(renderAll).catch(function () {});
+    });
+  });
+  document.querySelectorAll("[data-go-report]").forEach(function (b) {
+    b.addEventListener("click", function () {
+      var kind = b.dataset.goReport;
+      if (!isLoggedIn()) {
+        pendingReportKind = kind;
+        setView("account");
+        toast("Please sign in to submit a report.");
+        return;
+      }
+      setKind(kind);
+      setView("report");
+    });
+  });
+
+  /* ================= Auth (login / register / logout) ================= */
+  function updateAccountUI() {
+    var guest = document.getElementById("account-guest");
+    var user = document.getElementById("account-user");
+    var summary = document.getElementById("account-summary");
+    if (isLoggedIn()) {
+      var u = getStoredUser();
+      guest.style.display = "none";
+      user.style.display = "block";
+      summary.textContent = "Signed in as " + (u && u.name ? u.name : "you") + (u && u.email ? " (" + u.email + ")" : "") + ".";
+    } else {
+      guest.style.display = "block";
+      user.style.display = "none";
+    }
+  }
+  function afterAuthSuccess() {
+    if (pendingReportKind) {
+      var kind = pendingReportKind;
+      pendingReportKind = null;
+      setKind(kind);
+      setView("report");
+    } else {
+      setView("account");
+    }
+  }
+
+  document.getElementById("auth-login-btn").addEventListener("click", function () {
+    this.classList.add("active");
+    document.getElementById("auth-register-btn").classList.remove("active");
+    document.getElementById("login-form").style.display = "block";
+    document.getElementById("register-form").style.display = "none";
+  });
+  document.getElementById("auth-register-btn").addEventListener("click", function () {
+    this.classList.add("active");
+    document.getElementById("auth-login-btn").classList.remove("active");
+    document.getElementById("register-form").style.display = "block";
+    document.getElementById("login-form").style.display = "none";
+  });
+
+  document.getElementById("login-form").addEventListener("submit", async function (e) {
+    e.preventDefault();
+    var msg = document.getElementById("login-msg");
+    var email = document.getElementById("li-email").value.trim();
+    var password = document.getElementById("li-password").value;
+    msg.classList.remove("err");
+    msg.textContent = "Signing in…";
+    try {
+      var data = await apiLogin(email, password);
+      setSession(data.access_token, data.user);
+      updateAccountUI();
+      msg.textContent = "";
+      document.getElementById("login-form").reset();
+      toast("Welcome back, " + data.user.name + "!");
+      afterAuthSuccess();
+    } catch (err) {
+      msg.textContent = err.message;
+      msg.classList.add("err");
+    }
+  });
+
+  document.getElementById("register-form").addEventListener("submit", async function (e) {
+    e.preventDefault();
+    var msg = document.getElementById("register-msg");
+    var name = document.getElementById("reg-name").value.trim();
+    var email = document.getElementById("reg-email").value.trim();
+    var password = document.getElementById("reg-password").value;
+    msg.classList.remove("err");
+    if (password.length < 8) {
+      msg.textContent = "Password must be at least 8 characters.";
+      msg.classList.add("err");
+      return;
+    }
+    msg.textContent = "Creating account…";
+    try {
+      var data = await apiRegister(name, email, password);
+      setSession(data.access_token, data.user);
+      updateAccountUI();
+      msg.textContent = "";
+      document.getElementById("register-form").reset();
+      toast("Welcome, " + data.user.name + "!");
+      afterAuthSuccess();
+    } catch (err) {
+      msg.textContent = err.message;
+      msg.classList.add("err");
+    }
+  });
+
+  document.getElementById("logout-btn").addEventListener("click", function () {
+    clearSession();
+    updateAccountUI();
+    setView("home");
+    toast("Signed out.");
+  });
+
+  /* ================= Report form ================= */
+  function setKind(kind) {
+    currentKind = kind;
+    document.getElementById("kind-lost-btn").classList.toggle("active", kind === "lost");
+    document.getElementById("kind-found-btn").classList.toggle("active", kind === "found");
+    document.getElementById("report-title").textContent = kind === "lost" ? "Report a lost item" : "Report a found item";
+    document.getElementById("report-hint").textContent = kind === "lost"
+      ? "Describe it well — matching works from these details."
+      : "Every detail you add helps reunite it with its owner.";
+    document.getElementById("f-location-label").textContent = kind === "lost" ? "Where was it lost?" : "Where was it found?";
+    document.getElementById("submit-btn").textContent = kind === "lost" ? "Submit lost report" : "Submit found report";
+  }
+  document.getElementById("kind-lost-btn").addEventListener("click", function () { setKind("lost"); });
+  document.getElementById("kind-found-btn").addEventListener("click", function () { setKind("found"); });
+
+  document.getElementById("report-form").addEventListener("submit", async function (e) {
+    e.preventDefault();
+    var msg = document.getElementById("form-msg");
+    var btn = document.getElementById("submit-btn");
+
+    if (!isLoggedIn()) {
+      setView("account");
+      toast("Please sign in to submit a report.");
+      return;
+    }
+
+    var title = document.getElementById("f-title").value.trim();
+    var description = document.getElementById("f-description").value.trim();
+    var contact = document.getElementById("f-contact").value.trim();
+    if (!title || !description || !contact) {
+      msg.textContent = "Title, description and contact are required.";
+      msg.classList.add("err");
+      return;
+    }
+    msg.classList.remove("err");
+
+    var dateVal = document.getElementById("f-date").value;
+    var locationVal = document.getElementById("f-location").value.trim();
+
+    var fd = new FormData();
+    fd.append("item_name", title);
+    fd.append("category", document.getElementById("f-category").value);
+    fd.append("description", description);
+    if (locationVal) fd.append("location_text", locationVal);
+    if (dateVal) fd.append("event_time", dateVal + "T00:00:00");
+    // The existing form only collects one free-text contact value per report,
+    // and the backend's Report model has no per-report contact field (contact
+    // details are meant to live on the user's account and be revealed through
+    // the in-app messaging system) -- contact_method is the closest real field,
+    // so that's what carries it through untouched.
+    fd.append("contact_method", contact);
+
+    var kind = currentKind;
+    btn.disabled = true;
+    msg.textContent = "Saving…";
+    try {
+      var report = await apiCreateReport(kind, fd);
+      msg.textContent = "Finding matches…";
+      var newMatches = await apiRunMatch(report.id);
+      var created = newMatches.length;
+      try { await refreshAll(); } catch (refreshErr) { /* report + matching already succeeded */ }
+      msg.textContent = "Saved. " + (created ? created + " possible match" + (created > 1 ? "es" : "") + " found." : "No matches yet.");
+      document.getElementById("report-form").reset();
+      toast("Report saved" + (created ? " — " + created + " possible match" + (created > 1 ? "es" : "") + " found" : ""));
+      if (created)  setView("dashboard");
+    } catch (err) {
+      msg.textContent = err.message || "Could not save — please try again.";
+      msg.classList.add("err");
+      if (err.status === 401) { updateAccountUI(); setView("account"); }
+    } finally {
+      btn.disabled = false;
+    }
+  });
+
+  /* ================= Demo data =================
+     Delegates entirely to the backend's own POST /api/demo/seed, which
+     creates real reports and runs the real matching engine over them --
+     nothing here invents items or scores on the frontend. */
+  document.getElementById("seed-btn").addEventListener("click", async function () {
+    var b = this;
+    if (localStorage.getItem(SEED_KEY)) {
+      toast("Demo data already loaded on this device.");
+      return;
+    }
+    b.disabled = true;
+    toast("Loading demo data…");
+    try {
+      var summary = await apiSeedDemo();
+      localStorage.setItem(SEED_KEY, "1");
+      try { await refreshAll(); } catch (refreshErr) { /* seed already succeeded */ }
+      var mc = summary.matches_created || 0;
+      toast("Demo data loaded" + (mc ? " — " + mc + " possible match" + (mc === 1 ? "" : "es") + " found." : "."));
+      setView("dashboard");
+    } catch (e) {
+      toast(e.message || "Could not load demo data.");
+    } finally {
+      b.disabled = false;
+    }
+  });
+
+  /* ================= Rendering ================= */
+  function scoreLabel(score) {
+    return "Possible Match — " + score + "%";
+  }
+
+  function renderStats() {
+    var lost = 0, found = 0;
+    Object.values(items).forEach(function (i) { if (i.kind === "lost") lost++; else found++; });
+    document.getElementById("stat-lost").textContent = lost;
+    document.getElementById("stat-found").textContent = found;
+    document.getElementById("stat-matches").textContent = Object.keys(matches).length;
+  }
+
+  function renderDashboard() {
+    var list = Object.keys(matches).map(function (id) { return matches[id]; });
+    list.sort(function (a, b) { return b.score - a.score; });
+    var el = document.getElementById("dash-list");
+    document.getElementById("dash-meta").textContent = list.length + " possible match" + (list.length === 1 ? "" : "es");
+    if (!list.length) {
+      el.innerHTML = '<div class="empty-note">No matches yet — report a lost and a found item to see AI matching in action.</div>';
+      return;
+    }
+    el.innerHTML = list.map(function (m) {
+      var lost = m.lost_report, found = m.found_report;
+      if (!lost || !found) return "";
+      var rounded = Math.round(m.score);
+      return '<div class="match-card" data-match="' + m.id + '">' +
+        '<div class="match-top">' +
+          '<span class="score-badge' + (rounded < 40 ? " low" : "") + '">' + scoreLabel(rounded) + '</span>' +
+          '<span class="match-date">' + new Date(m.created_at).toLocaleDateString() + '</span>' +
+        '</div>' +
+        '<div class="match-pair">' +
+          '<span>' + esc(lost.item_name) + ' <span class="tag">(lost)</span></span>' +
+          '<span class="arrow">↔</span>' +
+          '<span>' + esc(found.item_name) + ' <span class="tag">(found)</span></span>' +
+        '</div>' +
+        '<div class="match-explain">' + esc(m.reasons.join(" · ")) + '</div>' +
+      '</div>';
+    }).join("");
+    el.querySelectorAll("[data-match]").forEach(function (card) {
+      card.addEventListener("click", function () { openMatchModal(card.dataset.match); });
+    });
+  }
+
+  function renderReports() {
+    var list = Object.keys(items).map(function (id) { return items[id]; });
+    list.sort(function (a, b) { return new Date(b.created_at) - new Date(a.created_at); });
+    if (currentFilter !== "all") list = list.filter(function (i) { return i.kind === currentFilter; });
+    document.getElementById("reports-meta").textContent = Object.keys(items).length + " total";
+    var el = document.getElementById("reports-list");
+    if (!list.length) {
+      el.innerHTML = '<div class="empty-note">No reports yet.</div>';
+      return;
+    }
+    el.innerHTML = list.map(function (it) {
+      return '<div class="item-card" data-item="' + it.id + '">' +
+        '<div class="item-top">' +
+          '<span class="item-kind ' + it.kind + '">' + (it.kind === "lost" ? "Lost" : "Found") + '</span>' +
+          '<span class="item-sub">' + esc(it.category) + '</span>' +
+        '</div>' +
+        '<div class="item-title">' + esc(it.item_name) + '</div>' +
+        '<div class="item-sub">' + esc(it.location_text || "Location not given") + (it.event_time ? " · " + esc(formatDate(it.event_time)) : "") + '</div>' +
+      '</div>';
+    }).join("");
+    el.querySelectorAll("[data-item]").forEach(function (card) {
+      card.addEventListener("click", function () { openItemModal(card.dataset.item); });
+    });
+  }
+  document.querySelectorAll(".filter-row button").forEach(function (b) {
+    b.addEventListener("click", function () {
+      document.querySelectorAll(".filter-row button").forEach(function (x) { x.classList.remove("active"); });
+      b.classList.add("active");
+      currentFilter = b.dataset.filter;
+      renderReports();
+    });
+  });
+
+  function renderAll() {
+    renderStats();
+    renderDashboard();
+    renderReports();
+  }
+
+  /* ================= Modals ================= */
+  function itemDetailRows(it) {
+    var rows = [
+      ["Type", it.kind === "lost" ? "Lost" : "Found"],
+      ["Category", it.category || "—"],
+      ["Location", it.location_text || "—"],
+      ["Date", formatDate(it.event_time) || "—"],
+      ["Description", it.description || "—"],
+      ["Contact", it.contact_method || "—"],
+      ["Status", statusLabel(it.status)]
+    ];
+    if (it.brand) rows.push(["Brand", it.brand]);
+    if (it.model) rows.push(["Model", it.model]);
+    if (it.color) rows.push(["Color", it.color]);
+    if (it.distinguishing_features) rows.push(["Features", it.distinguishing_features]);
+    return rows.map(function (r) {
+      return '<div class="detail-row"><div class="k">' + esc(r[0]) + '</div><div class="v">' + esc(r[1]) + '</div></div>';
+    }).join("");
+  }
+  function factorRows(factors) {
+    if (!factors || !factors.length) return "";
+    return factors.map(function (f) {
+      var val = f.available ? Math.round((f.score || 0) * 100) + "%" : "not available";
+      return '<div class="detail-row"><div class="k">' + esc(f.label) + '</div><div class="v">' + esc(val) + '</div></div>';
+    }).join("");
+  }
+  function openModal(innerHtml) {
+    var back = document.createElement("div");
+    back.className = "modal-backdrop";
+    back.innerHTML = '<div class="modal">' + innerHtml + '</div>';
+    back.addEventListener("click", function (e) { if (e.target === back) back.remove(); });
+    back.querySelector(".modal-close") && back.querySelector(".modal-close").addEventListener("click", function () { back.remove(); });
+    document.body.appendChild(back);
+  }
+  function openItemModal(id) {
+    var it = items[id];
+    if (!it) return;
+    openModal('<button class="modal-close" aria-label="Close">×</button>' +
+      '<h3>' + esc(it.item_name) + '</h3>' +
+      itemDetailRows(it));
+  }
+  function openMatchModal(id) {
+    var m = matches[id];
+    if (!m) return;
+    var lost = m.lost_report, found = m.found_report;
+    if (!lost || !found) return;
+    var rounded = Math.round(m.score);
+    openModal('<button class="modal-close" aria-label="Close">×</button>' +
+      '<h3>' + scoreLabel(rounded) + '</h3>' +
+      '<div class="match-explain" style="border:none;padding-top:2px;margin-top:2px;">' + esc(m.reasons.join(" · ")) + '</div>' +
+      '<div class="divider">Why this may match</div>' + factorRows(m.factors) +
+      '<div class="divider">Lost report</div>' + itemDetailRows(lost) +
+      '<div class="divider">Found report</div>' + itemDetailRows(found));
+  }
+
+  /* ================= Init ================= */
+  async function init() {
+    setKind("lost");
+    setView("home");
+    updateAccountUI();
+    renderAll(); // immediate paint (empty state) before the network round-trip
+
+    var token = getToken();
+    if (token) {
+      try {
+        var me = await apiMe();
+        setSession(token, me);
+      } catch (e) {
+        clearSession();
+      }
+      updateAccountUI();
+    }
+
+    try { await refreshAll(); } catch (e) { /* backend-unavailable banner already shown */ }
+  }
+  init();
+})();
+</script>
+</body>
+</html>
