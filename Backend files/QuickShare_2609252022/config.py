@@ -34,8 +34,7 @@ class Settings(BaseSettings):
     WEIGHT_LOCATION: float = 0.10
     WEIGHT_DATE: float = 0.05
 
-    CORS_ORIGINS: str = "http://localhost:5173,http://localhost:3000,http://127.0.0.1:5500,http://localhost:5500,http://127.0.0.1:3000,http://127.0.0.1:5173,http://127.0.0.1:8080,http://localhost:8080"
-
+    CORS_ORIGINS: str = CORS_ORIGINS: str = CORS_ORIGINS: str = "https://ai-powered-lost-and-found-application-oban-gliv2ql7x.vercel.app,http://localhost:5500,http://127.0.0.1:5500"
     model_config = SettingsConfigDict(env_file=".env", extra="ignore")
 
     @property
